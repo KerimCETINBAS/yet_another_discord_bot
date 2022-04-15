@@ -12,7 +12,7 @@ createServer((req: IncomingMessage, res: ServerResponse) => res.end()).listen(pr
 const bot: Client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION', 'USER'],intents : [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]})
 
 bot.on("messageCreate", CommandParser)
-bot.on("messageReactionAdd", async (reaction, user) => {
+bot.on("messageReactionAdd", async (reaction:any, user:any) => {
     if(user.bot) return;
     let d: any = (await db.allDocs({include_docs:true}))
     if(!(d.total_rows > 0)) return;
