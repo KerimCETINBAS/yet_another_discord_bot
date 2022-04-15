@@ -3,10 +3,17 @@ import PouchDb = require("pouchdb");
 import { bot } from "..";
 
 const db = new PouchDb("reactions")
+const wait = (ms:number) => new Promise(async resolve => setTimeout(resolve ,ms))
+    
 const subcommands: Record<string, Function> = {
 
     getall: async(msg:Message, segments: string[]) => {
+        
         const allGroups: any[] =  (await db.allDocs({ include_docs: true})).rows.filter((row: any) => row.doc!.guild == msg.guildId && row.doc!.roleGroup !== undefined)
+
+      
+
+
         const embed = new MessageEmbed()
             .setTitle('Roles')
         	.setColor('#0099ff')
@@ -16,6 +23,7 @@ const subcommands: Record<string, Function> = {
             .addFields(
                 doc.roles.map((r:any) => {
                     const role = msg.guild?.roles.cache.get(r.role.trim().replace(/[^\d]+/g,""))
+                   
                     return {
                         name: role?.name || "\u200B", value: r.emoji || "\u200B", inline: true
                     }
@@ -35,9 +43,11 @@ const subcommands: Record<string, Function> = {
         }
         segments.shift()
         segments.shift()
+        
         // segments[0] msg id
         // segments[1] channel id
         // segments[2] groupname
+
         await db.get(msg.guildId + segments[2]).then(async function (doc) {
             await db.put({
                 _id:   msg.guildId + segments[2],
@@ -47,6 +57,7 @@ const subcommands: Record<string, Function> = {
                 roleGroup: segments[2],
                 roles: [],
                 _rev: doc._rev
+                
             })
         }).catch(async function (err) {
             await db.put({
@@ -79,9 +90,11 @@ const subcommands: Record<string, Function> = {
                 })
                 await db.put(doc)
             }
+
             const channel = bot.channels.cache.get(doc.channelId) as TextChannel
             const message = await channel.messages.fetch(doc.messageId)
             message.react(segments[1].trim())
+           
         }
       
     },
@@ -91,6 +104,7 @@ const subcommands: Record<string, Function> = {
         if((segments.length < 5)) return msg.reply("eksik parametre")
         segments.shift()
         segments.shift()
+
         // segments[0] group name
         // segments[1] emoji
         // segments[2] new role
@@ -103,8 +117,10 @@ const subcommands: Record<string, Function> = {
         segments.shift()
           // segments[0] group name
           // segments[1] emoji
+
         const group: any = ( await db.get(msg.guildId + segments[0]))
         group.roles.splice(group.roles.findIndex((r: any) => r.emoji == segments[1].trim()),1)
+
         await db.put(group)
         const channel = bot.channels.cache.get(group.channelId) as TextChannel
         const message = await channel.messages.fetch(group.messageId)
@@ -117,13 +133,33 @@ const subcommands: Record<string, Function> = {
         segments.shift()
         segments.shift()
         // segments[0] group name
+
         await db.get(msg.guildId + segments[0]).then(doc => db.remove(doc))
+
+        
     },
     help: (msg: Message, segments: string[]) => {
 
     }
 }
 export default async (msg: Message, segments: string[]) => {
+    
+
     if(subcommands[segments[1]]) subcommands[segments[1]](msg, segments)
-    else msg.reply("unknow subcommand " + segments[1])
+
+    else {
+
+        const rep = msg.reply("unknow subcommand " + segments[1])
+
+
+        await new Promise(async (resolve)=> {
+
+            setTimeout(resolve ,2000)
+        })
+
+
+        msg.delete()
+        ;(await rep).delete()
+
+    }
 }
