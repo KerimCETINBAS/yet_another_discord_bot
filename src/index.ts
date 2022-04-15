@@ -4,7 +4,10 @@ import { CommandParser } from "./commandParser"
 import PouchDb = require("pouchdb");
 import { totalmem } from "os";
 const db = new PouchDb("reactions")
+import { createServer, IncomingMessage, ServerResponse } from "http"
 config()
+
+createServer((req: IncomingMessage, res: ServerResponse) => res.end()).listen(process.env.PORT || 3000)
 
 const bot: Client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION', 'USER'],intents : [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]})
 
